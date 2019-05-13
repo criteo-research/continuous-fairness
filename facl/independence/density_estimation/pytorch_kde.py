@@ -3,6 +3,12 @@ from math import pi, sqrt
 
 
 class kde:
+    """
+    A Gaussian KDE implemented in pytorch for the gradients to flow in pytorch optimization.
+
+    Keep in mind that KDE are not scaling well with the number of dimensions and this implementation is not really
+    optimized...
+    """
     def __init__(self, x_train):
         n, d = x_train.shape
 
@@ -32,6 +38,13 @@ class kde:
 
 
 def _unsqueeze_multiple_times(input, axis, times):
+    """
+    Utils function to unsqueeze tensor to avoid cumbersome code
+    :param input: A pytorch Tensor of dimensions (D_1,..., D_k)
+    :param axis: the axis to unsqueeze repeatedly
+    :param times: the number of repetitions of the unsqueeze
+    :return: the unsqueezed tensor. ex: dimensions (D_1,... D_i, 0,0,0, D_{i+1}, ... D_k) for unsqueezing 3x axis i.
+    """
     output = input
     for i in range(times):
         output = output.unsqueeze(axis)
