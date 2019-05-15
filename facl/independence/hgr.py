@@ -3,7 +3,7 @@ import torch
 
 
 # Independence of 2 variables
-def joint_2(X, Y, density, damping=1e-10):
+def _joint_2(X, Y, density, damping=1e-10):
     X = (X - X.mean()) / X.std()
     Y = (Y - Y.mean()) / Y.std()
     data = torch.cat([X.unsqueeze(-1), Y.unsqueeze(-1)], -1)
@@ -22,15 +22,33 @@ def joint_2(X, Y, density, damping=1e-10):
 
 
 def hgr(X, Y, density, damping = 1e-10):
-    h2d = joint_2(X, Y, density, damping=damping)
+    """
+    An estimator of the Hirschfeld-Gebelein-Renyi maximum correlation coefficient using Witsenhausen’s Characterization:
+    HGR(x,y) is the second highest eigenvalue of the joint density on (x,y). We compute here the second eigenvalue on
+    an empirical and discretized density estimated from the input data.
+    :param X: A torch 1-D Tensor
+    :param Y: A torch 1-D Tensor
+    :param density: so far only kde is supported
+    :return: numerical value between 0 and 1 (0: independent, 1:linked by a deterministic equation)
+    """
+    h2d = _joint_2(X, Y, density, damping=damping)
     marginal_x = h2d.sum(dim=1).unsqueeze(1)
     marginal_y = h2d.sum(dim=0).unsqueeze(0)
     Q = h2d / (torch.sqrt(marginal_x) * torch.sqrt(marginal_y))
     return torch.svd(Q)[1][1]
 
 
-def chi_2(X, Y, density, damping = 1e-10):
-    h2d = joint_2(X, Y, density, damping=damping)
+def chi_2(X, Y, density, damping = 0):
+    """
+    The \chi^2 divergence between the joint distribution on (x,y) and the product of marginals. This is know to be the
+    square of an upper-bound on the Hirschfeld-Gebelein-Renyi maximum correlation coefficient. We compute it here on
+    an empirical and discretized density estimated from the input data.
+    :param X: A torch 1-D Tensor
+    :param Y: A torch 1-D Tensor
+    :param density: so far only kde is supported
+    :return: numerical value between 0 and \infty (0: independent)
+    """
+    h2d = _joint_2(X, Y, density, damping=damping)
     marginal_x = h2d.sum(dim=1).unsqueeze(1)
     marginal_y = h2d.sum(dim=0).unsqueeze(0)
     Q = h2d / (torch.sqrt(marginal_x) * torch.sqrt(marginal_y))
@@ -39,7 +57,7 @@ def chi_2(X, Y, density, damping = 1e-10):
 
 # Independence of conditional variables
 
-def joint_3(X, Y, Z, density, damping=1e-10):
+def _joint_3(X, Y, Z, density, damping=1e-10):
     X = (X - X.mean()) / X.std()
     Y = (Y - Y.mean()) / Y.std()
     Z = (Z - Z.mean()) / Z.std()
@@ -59,8 +77,19 @@ def joint_3(X, Y, Z, density, damping=1e-10):
 
 
 def hgr_cond(X, Y, Z, density):
+    """
+    An estimator of the function z -> HGR(x|z, y|z) where HGR is the Hirschfeld-Gebelein-Renyi maximum correlation
+    coefficient computed using Witsenhausen’s Characterization: HGR(x,y) is the second highest eigenvalue of the joint
+    density on (x,y). We compute here the second eigenvalue on
+    an empirical and discretized density estimated from the input data.
+    :param X: A torch 1-D Tensor
+    :param Y: A torch 1-D Tensor
+    :param Z: A torch 1-D Tensor
+    :param density: so far only kde is supported
+    :return: A torch 1-D Tensor of same size as Z. (0: independent, 1:linked by a deterministic equation)
+    """
     damping = 1e-10
-    h3d = joint_3(X, Y, Z, density, damping=damping)
+    h3d = _joint_3(X, Y, Z, density, damping=damping)
     marginal_xz = h3d.sum(dim=1).unsqueeze(1)
     marginal_yz = h3d.sum(dim=0).unsqueeze(0)
     Q = h3d / (torch.sqrt(marginal_xz) * torch.sqrt(marginal_yz))
@@ -68,12 +97,20 @@ def hgr_cond(X, Y, Z, density):
 
 
 def chi_2_cond(X, Y, Z, density):
+    """
+    An estimator of the function z -> chi^2(x|z, y|z) where \chi^2 is the \chi^2 divergence between the joint
+    distribution on (x,y) and the product of marginals. This is know to be the square of an upper-bound on the
+    Hirschfeld-Gebelein-Renyi maximum correlation coefficient. We compute it here on an empirical and discretized
+    density estimated from the input data.
+    :param X: A torch 1-D Tensor
+    :param Y: A torch 1-D Tensor
+    :param Z: A torch 1-D Tensor
+    :param density: so far only kde is supported
+    :return: A torch 1-D Tensor of same size as Z. (0: independent)
+    """
     damping = 0
-    h3d = joint_3(X, Y, Z, density, damping=damping)
+    h3d = _joint_3(X, Y, Z, density, damping=damping)
     marginal_xz = h3d.sum(dim=1).unsqueeze(1)
     marginal_yz = h3d.sum(dim=0).unsqueeze(0)
     Q = h3d / (torch.sqrt(marginal_xz) * torch.sqrt(marginal_yz))
     return ((Q ** 2).sum(dim=[0, 1]) - 1.)
-
-
-    
