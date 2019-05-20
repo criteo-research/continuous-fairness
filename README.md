@@ -23,7 +23,7 @@ jupyter notebooks.
 ## LICENSE
 The license can be found on in the file LICENSE.
 
-## Bitext
+## BibTex
 If you use this code please cite
 ```
 @InProceedings{pmlr-mary19,
