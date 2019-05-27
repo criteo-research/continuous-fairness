@@ -2,9 +2,6 @@ name: continuous-fairness
 channels:
   - defaults
 dependencies:
-  - jupyter
   - numpy
-  - pandas
   - python=3.5
   - pytorch
-  - scipy

@@ -1,0 +1,12 @@
+name: continuous-fairness-all
+channels:
+  - defaults
+dependencies:
+  - jupyter
+  - matplotlib
+  - numpy
+  - pandas
+  - python=3.5
+  - pytorch
+  - scikit-learn
+  - scipy

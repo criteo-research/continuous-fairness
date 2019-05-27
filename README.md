@@ -8,10 +8,11 @@ C. Calauzènes, N. El Karoui, ICML 2019
 
 ## Install
 
-First, you can create a conda environment from the YML file
+First, you can create two conda environments from the YML files, one for the library facl only and one for library and 
+notebooks. If you wish to run the examples, you should choose 'env_library_and_notebooks.yml'.
 ```bash
-conda env create -f env.yml
-conda activate continuous-fairness
+conda env create -f env_library_and_notebooks.yml
+conda activate continuous-fairness-all
 ```
 
 ## Examples
